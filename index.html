@@ -212,7 +212,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-04-16 13:45:34" itemprop="dateModified" datetime="2024-04-16T13:45:34+08:00">2024-04-16</time>
+      <time title="修改时间：2024-04-16 13:53:25" itemprop="dateModified" datetime="2024-04-16T13:53:25+08:00">2024-04-16</time>
     </span>
 
   
@@ -222,7 +222,7 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>9.5k</span>
+      <span>9.7k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
@@ -316,7 +316,7 @@
 <p>What makes this confusing in C++, however, is that types that manage resources might be written without an implementation of move. They might pre-date the move feature, or their implementor might not have understood move well enough to implement them, or there might be a technical reason why moving couldn’t be implemented in a way that elides the resource duplication. For these types, a move falls back on a copy, even if the copy does significant work. This can be surprising to the programmer, and surprises in programming are never good. More direly, there is no warning when this happens, because the notion of resource management is not referenced in the semantics.</p>
 </blockquote>
 </li>
-<li><p><strong>Destructive move or non-destructive</strong>: move in cpp is non-destructive while in rust is the opposite; <strong>DESTRUCTIVE MOVE</strong> here means there is a GAP between move ctor and the ends of object’s lifetime, moved-from object in this period stays in a unspecified&#x2F;“empty-but-valid” state, which is dangerous and leave some space to operate; In rust, there is no gap between them, “The move replaces the dtor call at the end of the block, at compile time”, and you can’t refer(rd&#x2F;wr) the moved-from object after moving because the lifetime of it is terminated instantly when MOVE, or you’ll get a nice greeting from compiler; But that’s the problem! Especially when you use moved-from objects while the lifetime of it ain’t finish yet, like a file handle but not pointing to a file, or, a unique_ptr points to nothing; and it’s kind of… creepy&#x2F;buggy&#x2F;unsafe, i mean, just think about it… And one of the interesting things is, in most use-cases, we assumed that THEY’re not NULL despite the theoretical possibility; So you choose to add a check towards unique_ptr whether is nullptr when dereferencing, like <code>if err != nil</code> everywhere </p>
+<li><p><strong>Destructive move or non-destructive</strong>: move in cpp is non-destructive while in rust is the opposite; <strong>DESTRUCTIVE MOVE</strong> here means there is a GAP between move ctor and the ends of object’s lifetime, moved-from object in this period stays in a unspecified&#x2F;“empty-but-valid” state, which is dangerous and leave some space to operate. Thus, <strong>you can’t make any assumptions based on that unless is fully stated in the doc</strong>. For example, <code>std::string</code> does not make any promises about the contents of a moved-from string, so you can’t assume that moved-from string is empty; In rust, there is no gap between them, “<strong>The move replaces the dtor call at the end of the block, at compile time</strong>“, and you can’t refer(rd&#x2F;wr) the moved-from object after moving because the lifetime of it is terminated instantly when MOVE, or you’ll get a nice greeting from compiler; But that’s the problem! Especially when you use moved-from objects while the lifetime of it ain’t finish yet, like a file handle but not pointing to a file, or, a unique_ptr points to nothing; and it’s kind of… creepy&#x2F;buggy&#x2F;unsafe, i mean, just think about it… And one of the interesting things is, in most use-cases, <strong>we assumed that THEY’re not NULL</strong> despite the theoretical possibility; So you choose to add a check towards unique_ptr whether is nullptr when dereferencing everywhere, like <code>if err != nil</code></p>
 <blockquote>
 <p>But this is a surprise. This is a result of the “unspecified value.” And so while it may, strictly speaking, be “safe” to do things with a moved-from object other than destruct them or assign to them, in practice, without documentation to the contrary making stronger guarantees, the only way to get “not surprising” behavior is to greatly limit what you do with moved-from objects.</p>
 </blockquote>
