@@ -212,7 +212,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2024-04-15 00:10:06" itemprop="dateModified" datetime="2024-04-15T00:10:06+08:00">2024-04-15</time>
+      <time title="修改时间：2024-04-16 13:45:34" itemprop="dateModified" datetime="2024-04-16T13:45:34+08:00">2024-04-16</time>
     </span>
 
   
@@ -222,14 +222,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>5.3k</span>
+      <span>9.5k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>5 分钟</span>
+      <span>9 分钟</span>
     </span>
 </div>
 
@@ -272,6 +272,9 @@
 <img src="../images/2404142338.png" style="zoom:50%;" />
 </li>
 <li><p>Move semantic only make sense to <strong>moveable resources</strong> like heap data etc; “In the case of std::string, we have some non-moveable data” like SSO(“additional bytes for the Small String Optimization, something around 16 bytes” <strong>on the stack</strong>)</p>
+<ul>
+<li>Rust makes a special case for types that do not need move semantics, where <strong>the value itself contains all the information necessary to represent it</strong>, where no heap allocations or resources are managed by the value, types like i32</li>
+</ul>
 </li>
 </ul>
 </li>
@@ -289,7 +292,43 @@
 <li><p>It’s easily to observe the difference between <code>.push_back()</code> and <code>.emplace_back()</code> from outputs, while one using the intermediated <strong>temporary</strong> and the other emplace the object <strong>in place</strong></p>
 <ul>
 <li>Does it mean emplace-back is way better than push-back? Well, see <a target="_blank" rel="noopener" href="https://andreasfertig.blog/2023/04/push_back-vs-emplace_back-when-to-use-what/">when-to-use-what</a> for more details</li>
+<li><a target="_blank" rel="noopener" href="https://abseil.io/tips/112">https://abseil.io/tips/112</a></li>
 </ul>
+</li>
+</ul>
+<h2 id="Move-semantic-but-in-rust"><a href="#Move-semantic-but-in-rust" class="headerlink" title="Move semantic, but in rust"></a>Move semantic, but in rust</h2><ul>
+<li><strong>Run-time cost</strong>: due to the limitation and unflexibility of RAII, there will be some unnecessary and inevitable boiler-plate code(check) generated at run-time, while rust does all these things at compile-time<ul>
+<li>RAII is a <strong>Trade-off</strong>, unflexible for ergonomic; like <code>.unlock()</code> or this case</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// de-sugaring and post-inlining</span></span><br><span class="line">...</span><br><span class="line">foo = <span class="literal">nullptr</span>;      <span class="comment">// in move ctor</span></span><br><span class="line">...</span><br><span class="line"><span class="keyword">if</span> (foo != <span class="literal">nullptr</span>) <span class="comment">// in dtor</span></span><br><span class="line">    <span class="built_in">free</span>(foo);</span><br><span class="line"><span class="comment">// This null check is hidden by the fact that in C++, free and delete and friends are defined to be no-ops on null, but it still exists</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>Not always MOVE</strong>: in cpp, MOVE may not happen all the time as expected, plus it’s not the default or mandatory, and it might degrade to COPY <strong>implicitly</strong>, while in rust, the default option is MOVE and if you seek a deep copy, <strong>explicitly</strong> invoking <code>.clone()</code></p>
+<blockquote>
+<p>This is already an advantage to Rust. C++ pretends that all types are the same, even though they require different usage patterns in practice. You can pass a std::string by copy just like an int. Even if you have a vector of vectors of strings, you can pass by copy and that’s usually the default way to pass it – moves in many cases require explicit opt-in. For int it’s a reasonable default, but for collections types it isn’t, and in Rust the programming language is designed accordingly.</p>
+</blockquote>
+<blockquote>
+<p>Indeed, for reasons of consistency and generic programming, move is defined on all types that can be moved or copied, even types that don’t implement move differently than copy.</p>
+</blockquote>
+<blockquote>
+<p>What makes this confusing in C++, however, is that types that manage resources might be written without an implementation of move. They might pre-date the move feature, or their implementor might not have understood move well enough to implement them, or there might be a technical reason why moving couldn’t be implemented in a way that elides the resource duplication. For these types, a move falls back on a copy, even if the copy does significant work. This can be surprising to the programmer, and surprises in programming are never good. More direly, there is no warning when this happens, because the notion of resource management is not referenced in the semantics.</p>
+</blockquote>
+</li>
+<li><p><strong>Destructive move or non-destructive</strong>: move in cpp is non-destructive while in rust is the opposite; <strong>DESTRUCTIVE MOVE</strong> here means there is a GAP between move ctor and the ends of object’s lifetime, moved-from object in this period stays in a unspecified&#x2F;“empty-but-valid” state, which is dangerous and leave some space to operate; In rust, there is no gap between them, “The move replaces the dtor call at the end of the block, at compile time”, and you can’t refer(rd&#x2F;wr) the moved-from object after moving because the lifetime of it is terminated instantly when MOVE, or you’ll get a nice greeting from compiler; But that’s the problem! Especially when you use moved-from objects while the lifetime of it ain’t finish yet, like a file handle but not pointing to a file, or, a unique_ptr points to nothing; and it’s kind of… creepy&#x2F;buggy&#x2F;unsafe, i mean, just think about it… And one of the interesting things is, in most use-cases, we assumed that THEY’re not NULL despite the theoretical possibility; So you choose to add a check towards unique_ptr whether is nullptr when dereferencing, like <code>if err != nil</code> everywhere </p>
+<blockquote>
+<p>But this is a surprise. This is a result of the “unspecified value.” And so while it may, strictly speaking, be “safe” to do things with a moved-from object other than destruct them or assign to them, in practice, without documentation to the contrary making stronger guarantees, the only way to get “not surprising” behavior is to greatly limit what you do with moved-from objects.</p>
+</blockquote>
+<blockquote>
+<p>Again, this attitude, that a null pointer is a normal pointer, that an empty thread handle is a normal type of thread handle, is adaptive to programming C++. But it will inevitably exist in a programmer’s blind spot, as null pointers always have. The “not null” invariant is often expressed implicitly. Many uses of std::unique_ptr are relying on them never being null, and simply leave this up to the programmer to ensure.</p>
+</blockquote>
+<blockquote>
+<p>But in a sense, this is exactly what std::unique_ptr is. It has a special state where you cannot call its most important operator, the dereference operator. It only avoids being called buggy because it expands this state so it can be arrived at by other means.</p>
+</blockquote>
+<blockquote>
+<p>Again, everything Herb Sutter says is true in a strict sense. It is memory-safe to use moved-from objects other than to destroy or assign to them, even if the move operation makes no further guarantees. It simply isn’t safe in a broader sense, in that it will have surprising, changeable behavior. It is true that the null pointer is a valid value of std::unique_ptr, but smart pointers that implement move are forced to have such a value.</p>
+</blockquote>
 </li>
 </ul>
 <h2 id="End-Possibly-not…"><a href="#End-Possibly-not…" class="headerlink" title="End? Possibly not…"></a>End? Possibly not…</h2><p>There are still things left to explore, like how can a element of the vector use its ctor, is it concerned with <code>placement new</code>?</p>
@@ -522,13 +561,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">6k</span>
+    <span title="站点总字数">10k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5 分钟</span>
+    <span title="站点阅读时长">9 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
