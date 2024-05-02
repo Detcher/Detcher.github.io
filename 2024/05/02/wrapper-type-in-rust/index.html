@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" integrity="sha256-jTIdiMuX/e3DGJUGwl3pKSxuc6YOuqtJYkM0bGQESA4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"detcher.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.10.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Take-away It occurred to me that this plethora of “wrapper types” could be daunting to newcomers    And… yes :(a rust newbie saying so)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Wrapper? De-wrap it!">
+<meta property="og:url" content="https://detcher.github.io/2024/05/02/wrapper-type-in-rust/index.html">
+<meta property="og:site_name" content="Detcher&#39;s Blog">
+<meta property="og:description" content="Take-away It occurred to me that this plethora of “wrapper types” could be daunting to newcomers    And… yes :(a rust newbie saying so)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://detcher.github.io/2024/05/02/images/rust-memory-container.png">
+<meta property="og:image" content="https://detcher.github.io/2024/05/02/images/inside_wrapper.png">
+<meta property="article:published_time" content="2024-05-02T11:02:48.000Z">
+<meta property="article:modified_time" content="2024-05-02T14:07:33.904Z">
+<meta property="article:author" content="Detcher">
+<meta property="article:tag" content="rust">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://detcher.github.io/2024/05/02/images/rust-memory-container.png">
+
+
+<link rel="canonical" href="https://detcher.github.io/2024/05/02/wrapper-type-in-rust/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://detcher.github.io/2024/05/02/wrapper-type-in-rust/","path":"2024/05/02/wrapper-type-in-rust/","title":"Wrapper? De-wrap it!"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Wrapper? De-wrap it! | Detcher's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Detcher's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">SoloDoloBoi.</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Take-away"><span class="nav-number">1.</span> <span class="nav-text">Take-away</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Too-long-Just-see"><span class="nav-number">2.</span> <span class="nav-text">Too long; Just see</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">3.</span> <span class="nav-text">Reference</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RWlock-Pattern"><span class="nav-number">4.</span> <span class="nav-text">RWlock Pattern</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#And-here-comes-the-wrapper"><span class="nav-number">5.</span> <span class="nav-text">And here comes the wrapper</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RC-lt-T-gt"><span class="nav-number">5.1.</span> <span class="nav-text">RC&lt;T&gt;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Weak-lt-T-gt"><span class="nav-number">5.2.</span> <span class="nav-text">Weak&lt;T&gt;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cell-Type"><span class="nav-number">5.3.</span> <span class="nav-text">Cell Type</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Cell-lt-T-gt"><span class="nav-number">5.3.1.</span> <span class="nav-text">Cell&lt;T&gt;</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Refcell-lt-T-gt"><span class="nav-number">5.3.2.</span> <span class="nav-text">Refcell&lt;T&gt;</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Lock-Type"><span class="nav-number">5.4.</span> <span class="nav-text">Lock Type</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Costs-Notice"><span class="nav-number">5.4.1.</span> <span class="nav-text">Costs!! Notice!!</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RWlock"><span class="nav-number">5.5.</span> <span class="nav-text">RWlock</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Finally-Composition"><span class="nav-number">6.</span> <span class="nav-text">Finally, Composition!</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Detcher"
+      src="/images/avator3.gif">
+  <p class="site-author-name" itemprop="name">Detcher</p>
+  <div class="site-description" itemprop="description">Hip-Hop/Programming</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://detcher.github.io/2024/05/02/wrapper-type-in-rust/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avator3.gif">
+      <meta itemprop="name" content="Detcher">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Detcher's Blog">
+      <meta itemprop="description" content="Hip-Hop/Programming">
+    </span>
+    
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Wrapper? De-wrap it! | Detcher's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Wrapper? De-wrap it!
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-05-02 19:02:48 / 修改时间：22:07:33" itemprop="dateCreated datePublished" datetime="2024-05-02T19:02:48+08:00">2024-05-02</time>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="Take-away"><a href="#Take-away" class="headerlink" title="Take-away"></a>Take-away</h2><blockquote>
+<p>It occurred to me that this plethora of “wrapper types” could be daunting to newcomers  </p>
+</blockquote>
+<p>And… yes :(a rust newbie saying so)</p>
+<span id="more"></span>
+
+<h2 id="Too-long-Just-see"><a href="#Too-long-Just-see" class="headerlink" title="Too long; Just see"></a>Too long; Just see</h2><img src="../images/rust-memory-container.png" style="zoom:50%">
+<img src="../images/inside_wrapper.png" style="zoom=75%">
+
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a target="_blank" rel="noopener" href="https://manishearth.github.io/blog/2015/05/17/the-problem-with-shared-mutability/">https://manishearth.github.io/blog/2015/05/17/the-problem-with-shared-mutability/</a></p>
+<p><a target="_blank" rel="noopener" href="https://manishearth.github.io/blog/2015/05/27/wrapper-types-in-rust-choosing-your-guarantees/">https://manishearth.github.io/blog/2015/05/27/wrapper-types-in-rust-choosing-your-guarantees/</a></p>
+<blockquote>
+<p>Practically speaking, a type can be <strong>Copy</strong> if a copy of its stack representation doesn’t violate memory safety… <code>&amp;T</code> and <code>raw pointers</code> <strong>are Copy</strong>. Even though they do point to further data, they do not “own” that data.</p>
+</blockquote>
+<h2 id="RWlock-Pattern"><a href="#RWlock-Pattern" class="headerlink" title="RWlock Pattern"></a>RWlock Pattern</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">let x = <span class="built_in">some_big_thing</span>();</span><br><span class="line">let len = x.some_vec.<span class="built_in">len</span>();</span><br><span class="line"><span class="keyword">for</span> i in <span class="number">0.</span>.len &#123;</span><br><span class="line">    x.<span class="built_in">do_something_complicated</span>(x.some_vec[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Just like that, you can’t guarantee there won’t be any other changes, say, in <code>do_something_complicated()</code> or another thread, which may invalidate invariants of the loop, especially in complicated codebases or deep, nested call-chain.</p>
+<p>For example, a bit of code might first read the length of a vector, and then go ahead and iterate through it with a regular for loop bounded on the length. The invariant assumed here is the length of the vector. If pop() was called on the vector in some other thread, this invariant could be invalidated after the read to length but before the reads elsewhere, possibly causing a segfault or use-after-free in the last iteration.  </p>
+<p>And, apparently, the problem is it’s hard to maintain some invariants all the time manually:(  </p>
+<p>While C++ provides nothing for you, Rust does;)</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = Vec::<span class="title function_ invoke__">new</span>();</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">ptr</span> = &amp;<span class="keyword">mut</span> x; <span class="comment">// Take a mutable reference to `x`</span></span><br><span class="line">    ptr.<span class="title function_ invoke__">push</span>(<span class="number">1</span>); <span class="comment">// Allowed</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y</span> = x[<span class="number">0</span>]; <span class="comment">// Not allowed (will not compile): as long as `ptr` is active,</span></span><br><span class="line">                  <span class="comment">// x cannot be read from ...</span></span><br><span class="line">    x.<span class="title function_ invoke__">push</span>(<span class="number">1</span>);    <span class="comment">// .. or written to</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// alternatively,</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">x</span> = Vec::<span class="title function_ invoke__">new</span>();</span><br><span class="line">x.<span class="title function_ invoke__">push</span>(<span class="number">1</span>); <span class="comment">// Allowed</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">ptr</span> = &amp;x; <span class="comment">// Create an immutable reference</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y</span> = ptr[<span class="number">0</span>]; <span class="comment">// Allowed, nobody can mutate</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">y</span> = x[<span class="number">0</span>]; <span class="comment">// Similarly allowed</span></span><br><span class="line">    x.<span class="title function_ invoke__">push</span>(<span class="number">1</span>); <span class="comment">// Not allowed (will not compile): as long as `ptr` is active,</span></span><br><span class="line">               <span class="comment">// `x` is frozen for mutation</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>This is essentially the “Read-Write lock” (reader<strong>s</strong>&#x2F;writer) pattern, except being used in a single-threaded context, and the “locks” are done via static analysis (compile time “borrow checking”). This guarantee is enforced at compile time, and has no visible cost at runtime.  </p>
+<p>On the other hand, having a static guarantee that this can’t happen is great. And when the code is too convoluted for a static guarantee (or you just want to avoid the borrow checker), a single-threaded RWlock-esque type called <code>RefCell</code> is available in Rust. It’s a type providing interior mutability and behaves like a runtime version of the borrow checker. Similar wrappers can be written in other languages.  </p>
+<p>In case of many primitives like simple integers, the problems with shared mutability turn out to not be a major issue. For these, we have a type called <code>Cell</code> which lets these be mutated and shared simultaenously. This works on all Copy types; i.e. types which only need to be copied on the stack to be copied. (Unlike types involving pointers or other indirection)</p>
+<h2 id="And-here-comes-the-wrapper"><a href="#And-here-comes-the-wrapper" class="headerlink" title="And here comes the wrapper"></a>And here comes the wrapper</h2><h3 id="RC-lt-T-gt"><a href="#RC-lt-T-gt" class="headerlink" title="RC&lt;T&gt;"></a>RC&lt;T&gt;</h3><p>The internal data here is <strong>immutable</strong>.</p>
+<p>It’s a viable alternative to <code>&amp;T</code> when <code>&amp;T</code> is either impossible to statically check for correctness, or creates extremely unergonomic code where the programmer does not wish to spend the development cost of working with.  </p>
+<p>Say, when there are multiple immutable aliases and you have to concern about when to deallocate the resource these aliases point to, maybe you can give <code>Rc&lt;T&gt;</code> a shot with some minor runtime costs as the trade-off.</p>
+<h3 id="Weak-lt-T-gt"><a href="#Weak-lt-T-gt" class="headerlink" title="Weak&lt;T&gt;"></a>Weak&lt;T&gt;</h3><p>This is a <strong>non-owning</strong>, but also <strong>non-borrowed</strong>, smart pointer. It is also similar to <code>&amp;T</code>, but it is <strong>not restricted in lifetime</strong> — a <code>Weak&lt;T&gt;</code> can be held on to <strong>forever</strong>. However, it is possible that an attempt to access the inner data may fail and return None, since this can outlive the owned Rcs. This is useful for when one wants cyclic data structures and other things.</p>
+<h3 id="Cell-Type"><a href="#Cell-Type" class="headerlink" title="Cell Type"></a>Cell Type</h3><p><code>Cells</code> provide <strong>interior mutability</strong>. In other words, they contain data which can be manipulated even if the type cannot be obtained in a mutable form (for example, when it is behind an &amp;-ptr or Rc<T>).</p>
+<h4 id="Cell-lt-T-gt"><a href="#Cell-lt-T-gt" class="headerlink" title="Cell&lt;T&gt;"></a>Cell&lt;T&gt;</h4><p>Only for <strong>Copy types</strong>. Since Cell doesn’t allow references to the insides of a type (you can only copy out and copy back in), <strong>enums and structs alike</strong> are safe to be aliased mutably within this.</p>
+<pre><code>Cell::new(Box::new(...)) :NOPE:
+</code></pre>
+<p><code>&amp;</code> allows shared interior references but forbids mutation; <code>&amp;mut</code> allows mutation xor interior references but not sharing; <code>Cell</code> allows shared mutability but not interior references(again, copy types).</p>
+<p>Shared mutability coupled with inferior reference is a hell.</p>
+<h4 id="Refcell-lt-T-gt"><a href="#Refcell-lt-T-gt" class="headerlink" title="Refcell&lt;T&gt;"></a>Refcell&lt;T&gt;</h4><p>Not <strong>restricted</strong> to Copy types. It has a runtime cost, since <code>RefCell&lt;T&gt;</code> enforces the RWLock pattern at runtime (it’s like a single-threaded RWlock), unlike <code>&amp;T/&amp;mut T</code> which do so at compile time. But should be avoided if a mostly simple solution is possible with &amp; pointers.</p>
+<p>Using RefCell and Cell to guard all mutation lets us avoid worrying about mutability everywhere, and it simultaneously <strong>highlights the places where mutation is actually happening</strong>. Instead of modifying one variable throught equal-sign, we use method approach(.set()&#x2F;.replace()&#x2F;.borrow()&#x2F;.borrow_mut()).</p>
+<h3 id="Lock-Type"><a href="#Lock-Type" class="headerlink" title="Lock Type"></a>Lock Type</h3><h4 id="Costs-Notice"><a href="#Costs-Notice" class="headerlink" title="Costs!! Notice!!"></a>Costs!! Notice!!</h4><p><code>Mutex/RWlock</code> use internal atomic-like types to maintain the locks, and these are similar pretty costly (<strong>they can block all memory reads across processors till they’re done</strong> ?really). Waiting on these locks can also be slow when there’s a lot of concurrent access happening.</p>
+<h3 id="RWlock"><a href="#RWlock" class="headerlink" title="RWlock"></a>RWlock</h3><p><code>Refcell</code> and <code>RWlock</code> both have <strong>refcnts</strong> inside (guess) because they all obey the RWlock pattern and we can only have a writer when all readers have gone out of scope.</p>
+<h2 id="Finally-Composition"><a href="#Finally-Composition" class="headerlink" title="Finally, Composition!"></a>Finally, Composition!</h2><p>In reality, you know… Rust codes are just like <code>...&lt;...&lt;...&lt;...&lt;...&lt;...&lt;...&lt;...&lt;...&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code></p>
+<p>Usually, it’s a case of composing together the <strong>guarantees</strong> that one needs, without paying for stuff that is unnecessary. So, figuring out which guarantees we want, and at which point of the composition we need them</p>
+<p>e.g. <code>Rc&lt;RefCell&lt;Vec&lt;T&gt;&gt;&gt;</code> is similar to an <code>&amp;mut Vec&lt;T&gt;</code> with the borrow checking done at runtime.</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/rust/" rel="tag"># rust</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/04/14/move-constructor-string-and-push-back-emplace-back/" rel="prev" title="move constructor, string and push_back/emplace_back">
+                  <i class="fa fa-chevron-left"></i> move constructor, string and push_back/emplace_back
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Detcher</span>
+</div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">15k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">14 分钟</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
